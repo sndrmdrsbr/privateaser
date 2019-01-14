@@ -149,3 +149,58 @@ const actors = [{
 console.log(bars);
 console.log(events);
 console.log(actors);
+
+// Step 1 : Euro People
+events.forEach(function (event) {
+    bars.forEach(function (bar) {
+        if (bar.id == event.barId) {
+            event.price = bar.pricePerHour*event.time + bar.pricePerPerson*event.persons;
+        }
+    });
+})
+
+// Step 2 : Send more, pay less 
+events.forEach(function (event) {
+    if (event.persons > 10 && event.persons <= 20) {
+        event.price = 0.9 * event.price;
+    }
+    else if (event.persons > 20 && event.persons <= 60) {
+        event.price = 0.7 * event.price;
+    }
+    else if (event.persons > 60) {
+        event.price = 0.5 * event.price;
+    }
+});
+
+// Step 3 : Give me all your money
+events.forEach(function (event) {
+    var commission = 0.3 * event.price;
+    event.commission.insurance = 0.5 * commission;
+    event.commission.treasury = event.persons;
+    event.commission.privateaser = commission - event.commission.treasury - event.commission.insurance;
+})
+
+// Step 4 : The famous deductible
+events.forEach(function (event) {
+    if (event.options.deductibleReduction) {
+        event.price = event.price + event.persons;
+    }
+})
+
+// Step 5 : Pay the actors
+actors.forEach(function (actor) {
+    events.forEach(function (event) {
+        if (event.id == actor.eventId) {
+            actor.payment[0].amount = event.price;
+            var commission = event.commission.insurance + event.commission.privateaser + event.commission.treasury;
+            actor.payment[1].amount = event.price - commission;
+            actor.payment[2].amount = event.commission.insurance;
+            actor.payment[3].amount = event.commission.treasury;
+            actor.payment[4].amount = event.commission.privateaser;
+            if (event.options.deductibleReduction) {
+                actor.payment[4].amount += event.persons;
+            }
+        }
+    })
+})
+
